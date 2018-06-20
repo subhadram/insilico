@@ -13,8 +13,8 @@ class Ca_conc {
      double beta = 1.0512E-3,tauc = 14.0;
       //double beta = 1.0512,tauc = 14.0;
     //double I_cav2 = insilico::engine::neuron_value(index, "I_cav2");
-    double I_cav2 = insilico::engine::neuron_value(index, "I_cav2");
-   //double I_cav = insilico::engine::neuron_value(index, "I_cav");
+    //double I_cav2 = insilico::engine::neuron_value(index, "tn");
+   double I_cav = insilico::engine::neuron_value(index, "I_cav");
     unsigned Ca_conc_index = insilico::engine::neuron_index(index, "Ca_conc");
     double Ca_conc = variables[Ca_conc_index] = std::max<double>(variables[Ca_conc_index],0.000001);
     /*unsigned R_index = insilico::engine::neuron_index(index, "I_sahp_R");
@@ -36,7 +36,7 @@ class Ca_conc {
 */
     // ODE set
     //dxdt[Ca_conc_index] = ((-(beta*I_cav)*5.3E-9)/(1E-15*2*96490.0)) - (Ca_conc)/tauc ;
-    dxdt[Ca_conc_index] = (-1.0*I_cav2*2.0E-4) - (Ca_conc)/tauc ;
+    dxdt[Ca_conc_index] = (-1.0*I_cav*2.0E-4) - (Ca_conc)/tauc ;
     //dxdt[Ca_conc_index] = -(0.00*I_cav) - (Ca_conc)/tauc ;
     //std::cout << "hi";
     /*

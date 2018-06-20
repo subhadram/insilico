@@ -18,10 +18,10 @@
 #
 
 # Source files
-SOURCE = main.cpp
+SOURCE = maindf.cpp
 
 # Target excutables
-TARGET = insilico.out
+TARGET = df.out
 
 # Compiler to use
 CC = g++

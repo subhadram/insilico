@@ -4,7 +4,7 @@
 
 #include "insilico/core/engine.hpp"
 #include "insilico/neuron/helper/spike_list.hpp"
-//#include<math.h>
+
 #include "I_K_HH.hpp"
 #include "I_Leak_HH.hpp"
 #include "I_Na_HH.hpp"

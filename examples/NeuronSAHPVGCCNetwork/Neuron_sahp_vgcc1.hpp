@@ -4,13 +4,13 @@
 
 #include "insilico/core/engine.hpp"
 #include "insilico/neuron/helper/spike_list.hpp"
-//#include<math.h>
+
 #include "I_K_HH.hpp"
 #include "I_Leak_HH.hpp"
 #include "I_Na_HH.hpp"
 #include "I_cav.hpp"
-//#include "I_cavr.hpp"
-#include "Ca_concd.hpp"
+#include "I_cave.hpp"
+#include "Ca_conc.hpp"
 //#include "I_sahpc2.hpp"
 #include "I_sahp.hpp"
 
@@ -31,7 +31,7 @@ class Neuron_sahp_vgcc : public Neuron {
     double last_spiked = engine::neuron_value(index, "last_spike");
     double spike_duration = engine::neuron_value(index, "spike_duration");
     double thresh = engine::neuron_value(index, "thresh");
-	double dt = engine::neuron_value(index, "dt");
+	//double dt = engine::neuron_value(index, "dt");
     // associated delay for next spikes
     if((v > thresh) && (t - last_spiked) > spike_duration){
       engine::neuron_value(index, "last_spike", t);
@@ -60,18 +60,15 @@ class Neuron_sahp_vgcc : public Neuron {
     //I_sahp2::current(variables, dxdt, t, index);
     I_cav::current(variables, dxdt, t, index);
     double a = 0;
-    /*
-   if (t + dt > ts2){
-     while (ts2 < t+ dt){
+   if (index == 1){
+    double ts2 = engine::neuron_value(1, "ts2");
+     while (ts2 < t+ 0.01){
     I_cav2::current(variables, dxdt, t, index);
     ts2 = engine::neuron_value(index, "ts2");
     a = a + 1;
       std::cout << ts2<< " " <<t<<" "<<a<<std::endl ;
     }}
-    else{
-      I_cav2::current(variables, dxdt, t, index);
-      }
-   */
+   
   /* if (index == 1){
    //std::cout << "Hi"<< " " <<std::endl ;
     I_cav2::current(variables, dxdt, t, index);
@@ -97,12 +94,11 @@ class Neuron_sahp_vgcc : public Neuron {
      double I_cav = engine::neuron_value(index, "I_cav");
      //double ts2 = engine::neuron_value(index, "ts2");
     
-    //double gg = 1.0 ;
+    double gg = 1.0 ;
     	
    //double I_cav2 = engine::neuron_value(index, "I_cav2");
- 
-     // if (t < 1000.0){
-   //gg = 0.0;}
+    if( t < 1000){
+     gg = 0.0;}
     
      // std::cout << t << " "<< current << std::endl ;
     double amp_noise = engine::neuron_value(index, "amp_noise");
@@ -112,8 +108,8 @@ class Neuron_sahp_vgcc : public Neuron {
     //double Ca_conc = variables[Ca_conc_index];
    // insilico::engine::neuron_value(index, "I_Syn", I_Syn);
    //double ic = I_Ext - I_Syn -I_sahp- I_cav ;
-    dxdt[v_index] = I_Ext - I_Na - I_K - I_Leak -I_Syn -I_sahp- I_cav +current*amp_noise*sqrt(dt) ;
-     insilico::engine::neuron_value(index, "tn", tn);
+    dxdt[v_index] = (I_Ext) - I_Na - I_K - I_Leak -I_Syn -I_sahp- I_cav +current*amp_noise ;
+     //insilico::engine::neuron_value(index, "tn", tn);
      //insilico::engine::neuron_value(index, "ic", ic);
     // dxdt[v_index] = sin(3.14*t);
   } // function ode_set

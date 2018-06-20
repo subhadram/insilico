@@ -24,8 +24,8 @@
 #include "insilico/core.hpp"
 
 #include "insilico/neuron/helper/spike_list.hpp" //storing spike-list
-#include "Neuron_sahp_vgccdf.hpp"
-#include "S_TanHSynapse.hpp"
+#include "Neuron_sahp_vgcc7.hpp"
+#include "S_TanHSynapse7.hpp"
 
 #include <boost/numeric/odeint.hpp>
 
@@ -34,55 +34,74 @@
 #include <iomanip>
 #include <string>
 #include <vector>
+#include <map>
+#include <random>
 
+using namespace boost::numeric::odeint;
 using namespace insilico;
 using namespace std;
 
+
+using namespace boost::numeric::odeint;
+using namespace insilico;
+using namespace std;
 int main(int argc, char **argv) {
   //std::cout << "hi1";
   configuration::initialize(argc, argv);
   configuration::observe_delimiter(' ');
   configuration::observe_startrecording(0);
   configuration::observe_header(false);
-  //configuration::observe_neuron(0,"v");
   configuration::observe_neuron(1,"v");
+  //configuration::observe_neuron(0,"v");
+  configuration::observe_neuron(1,"il2");
   configuration::observe_neuron(1,"fail");
-  //configuration::observe_neuron(1,"h");
-  //configuration::observe_neuron(1,"n");
-  
-  //configuration::observe_neuron(1,"m");
-  //configuration::observe_synapse(1,"h");
-  //configuration::observe_synapse(1,"n");
-  //configuration::observe_synapse(1,"x");
-  //configuration::observe_skipiters(10);
-  //configuration::observe("il");
-  //configuration::observe("tn");
-  //configuration::observe_neuron(1,"Ca_conc");
-  //configuration::observe_neuron(1,"Ca_conc");
-  configuration::observe_neuron(1,"il");
-  configuration::observe_neuron(1,"fraction_of_open_channels");
-  configuration::observe_neuron(1,"I_cav");
-  //configuration::observe_neuron(1,"fail");
-  //configuration::observe("ff");
-  //configuration::observe("ts2");
-  //configuration::observe("K");
+   configuration::observe_skipiters(10);
+  configuration::observe_neuron(1,"Ca_conc");
   //configuration::observe_neuron(0,"I_Syn");
-  //configuration::observe("open");
- // configuration::observe("I_Syn");
+  //configuration::observe_neuron(1,"dt");
+  //configuration::observe_neuron(1,"I_sahp");
+  configuration::observe_neuron(1,"fraction_of_open_channels");
+  // configuration::observe_neuron(1,"I_Syn");
+  // configuration::observe_neuron(0,"I_Syn");
+   //configuration::observe_synapse(1,"s");
+    //configuration::observe_neuron(1,"s2");
   engine::generate_neuron<Neuron_sahp_vgcc>(2);
-  //std::cout << "hi2";
   engine::generate_synapse<S_TanHSynapse>(2); 
   engine::spike_list.resize(2);
-  //double dt = 0.01;
-  double dt = engine::neuron_value(0, "dt");
-  // double tw2 = engine::neuron_value(1, "tw");
-   
-   //double dtt = std::min({tw1,tw2,dt});
-  //std::cout << dtt<< std::endl;
+  
+  double tstop = engine::neuron_value(1, "tstop");
   state_type variables = engine::get_variables(); 
-  integrate_const(boost::numeric::odeint::euler<state_type>(),
-                  engine::driver(), variables,
-                  0.0, 2000.0, dt, configuration::observer());
-
+  
+  while(tstop <=20000.0){
+  	typedef std::vector< double > deriv_type;	
+  	unsigned res = variables.size();
+	deriv_type det(res); 
+	tstop = engine::neuron_value(1, "tstop");
+	double ts2 = engine::neuron_value(1, "ts2");
+	
+	double tw = engine::neuron_value(1, "tw");
+	
+	engine::driver()(variables , det, tstop ) ;	
+	
+	double tdet = 0.01 + tstop;
+	double tl = tstop +10.0;
+	
+    double tt = std::min({ts2,tdet,tl});
+	double dt = tt - tstop ;
+  for(unsigned i=0 ; i < variables.size() ; ++i) {
+			variables[i] += dt * det[i];
+		
+		}
+		
+		tstop += dt;
+		 insilico::engine::neuron_value(1, "dt", dt);
+		  insilico::engine::neuron_value(1, "tstop", tstop);
+		I_cav2::current(variables, det, tstop, 1);
+		ts2 = engine::neuron_value(1, "ts2");
+		  insilico::engine::neuron_value(1, "dt", dt);
+		  insilico::engine::neuron_value(1, "tstop", tstop);
+		configuration::observer()(variables,tstop);
+  }            
   configuration::finalize();
+ 
 }

@@ -8,7 +8,7 @@
 #include "I_K_HH.hpp"
 #include "I_Leak_HH.hpp"
 #include "I_Na_HH.hpp"
-#include "I_cav.hpp"
+#include "I_cavdf.hpp"
 //#include "I_cavr.hpp"
 #include "Ca_concd.hpp"
 //#include "I_sahpc2.hpp"

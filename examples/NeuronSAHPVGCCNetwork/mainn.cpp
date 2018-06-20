@@ -24,7 +24,7 @@
 #include "insilico/core.hpp"
 
 #include "insilico/neuron/helper/spike_list.hpp" //storing spike-list
-#include "Neuron_sahp_vgccdf.hpp"
+#include "Neuron_sahp_vgccn.hpp"
 #include "S_TanHSynapse.hpp"
 
 #include <boost/numeric/odeint.hpp>
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
   configuration::observe_header(false);
   //configuration::observe_neuron(0,"v");
   configuration::observe_neuron(1,"v");
-  configuration::observe_neuron(1,"fail");
+  //configuration::observe_neuron(1,"fail");
   //configuration::observe_neuron(1,"h");
   //configuration::observe_neuron(1,"n");
   
@@ -54,14 +54,14 @@ int main(int argc, char **argv) {
   //configuration::observe_synapse(1,"h");
   //configuration::observe_synapse(1,"n");
   //configuration::observe_synapse(1,"x");
-  //configuration::observe_skipiters(10);
+  configuration::observe_skipiters(10);
   //configuration::observe("il");
   //configuration::observe("tn");
-  //configuration::observe_neuron(1,"Ca_conc");
+  configuration::observe_neuron(1,"Ca_conc");
   //configuration::observe_neuron(1,"Ca_conc");
   configuration::observe_neuron(1,"il");
   configuration::observe_neuron(1,"fraction_of_open_channels");
-  configuration::observe_neuron(1,"I_cav");
+  //configuration::observe_neuron(1,"I_cav");
   //configuration::observe_neuron(1,"fail");
   //configuration::observe("ff");
   //configuration::observe("ts2");
@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
   state_type variables = engine::get_variables(); 
   integrate_const(boost::numeric::odeint::euler<state_type>(),
                   engine::driver(), variables,
-                  0.0, 2000.0, dt, configuration::observer());
+                  0.0, 100000.0, dt, configuration::observer());
 
   configuration::finalize();
 }

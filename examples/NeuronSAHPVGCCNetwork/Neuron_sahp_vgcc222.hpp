@@ -4,13 +4,13 @@
 
 #include "insilico/core/engine.hpp"
 #include "insilico/neuron/helper/spike_list.hpp"
-//#include<math.h>
+
 #include "I_K_HH.hpp"
 #include "I_Leak_HH.hpp"
 #include "I_Na_HH.hpp"
 #include "I_cav.hpp"
-//#include "I_cavr.hpp"
-#include "Ca_concd.hpp"
+//#include "I_cavmp.hpp"
+#include "Ca_conct.hpp"
 //#include "I_sahpc2.hpp"
 #include "I_sahp.hpp"
 
@@ -24,14 +24,15 @@ class Neuron_sahp_vgcc : public Neuron {
     //std::vector<double> esyn_values;
 
     unsigned v_index = engine::neuron_index(index, "v");
-    //std::cout << v_index<< " " <<t<<" "<<std::endl;
     double v = variables[v_index];
-
+	double rt = engine::neuron_value(index, "rt");
     // note the spike
     double last_spiked = engine::neuron_value(index, "last_spike");
     double spike_duration = engine::neuron_value(index, "spike_duration");
     double thresh = engine::neuron_value(index, "thresh");
-	double dt = engine::neuron_value(index, "dt");
+	double tq = engine::neuron_value(index, "tq");
+	//double ff = engine::neuron_value(index, "ff");
+	double fail = engine::neuron_value(index, "fail");
     // associated delay for next spikes
     if((v > thresh) && (t - last_spiked) > spike_duration){
       engine::neuron_value(index, "last_spike", t);
@@ -51,7 +52,7 @@ class Neuron_sahp_vgcc : public Neuron {
       I_Syn = I_Syn + gsyn_values[iterator]/**(1.0+variables[w_indices[iterator]])*/*variables[s_indices[iterator]] * (v - esyn_values[iterator]);
     }
     insilico::engine::neuron_value(index, "I_Syn", I_Syn);
-     //double ts2 = engine::neuron_value(index, "ts2");
+     double ts2 = engine::neuron_value(index, "ts2");
     // ODE set
     I_Na_HH::current(variables, dxdt, t, index);
     I_K_HH::current(variables, dxdt, t, index);
@@ -60,25 +61,22 @@ class Neuron_sahp_vgcc : public Neuron {
     //I_sahp2::current(variables, dxdt, t, index);
     I_cav::current(variables, dxdt, t, index);
     double a = 0;
-    /*
-   if (t + dt > ts2){
-     while (ts2 < t+ dt){
+    /* 
+    if (t + 0.005 > ts2){
+     while (ts2 < t+ 0.005){
     I_cav2::current(variables, dxdt, t, index);
     ts2 = engine::neuron_value(index, "ts2");
     a = a + 1;
-      std::cout << ts2<< " " <<t<<" "<<a<<std::endl ;
+     
     }}
     else{
       I_cav2::current(variables, dxdt, t, index);
       }
-   */
-  /* if (index == 1){
-   //std::cout << "Hi"<< " " <<std::endl ;
-    I_cav2::current(variables, dxdt, t, index);
-  }
-  */
+      */
+    //std::cout << ts2<< " " <<t<<" "<<a<<std::endl ;
+   
     Ca_conc::current(variables, dxdt, t, index);
-    //I_cav2::current(variables, dxdt, t, index);
+   //I_cav2::current(variables, dxdt, t, index);
   // I_cav2::current(variables, dxdt, t, index);
     std::vector<double> I_Noise = injector::external_current(index, t);
     double current = 0;
@@ -94,26 +92,45 @@ class Neuron_sahp_vgcc : public Neuron {
     double I_sahp = engine::neuron_value(index, "I_sahp");
     //double I_sahp2 = engine::neuron_value(index, "I_sahp2");
     	//std::cout << I_sahp<< " " <<std::endl ;
-     double I_cav = engine::neuron_value(index, "I_cav");
+    double I_cav = engine::neuron_value(index, "I_cav");
      //double ts2 = engine::neuron_value(index, "ts2");
     
-    //double gg = 1.0 ;
-    	
-   //double I_cav2 = engine::neuron_value(index, "I_cav2");
- 
-     // if (t < 1000.0){
-   //gg = 0.0;}
-    
-     // std::cout << t << " "<< current << std::endl ;
+     	
+    // double I_cav2 = engine::neuron_value(index, "I_cav2");
+     
     double amp_noise = engine::neuron_value(index, "amp_noise");
-    double tn = I_Ext - I_Na - I_K - I_Leak  -I_Syn -I_sahp- I_cav;
+    double tn =  - amp_noise*current;
     //double I_Syn = engine::neuron_value(index, "I_Syn");
     //unsigned int Ca_conc_index = engine::neuron_index(index,"Ca_conc");
     //double Ca_conc = variables[Ca_conc_index];
    // insilico::engine::neuron_value(index, "I_Syn", I_Syn);
    //double ic = I_Ext - I_Syn -I_sahp- I_cav ;
-    dxdt[v_index] = I_Ext - I_Na - I_K - I_Leak -I_Syn -I_sahp- I_cav +current*amp_noise*sqrt(dt) ;
-     insilico::engine::neuron_value(index, "tn", tn);
+ if (tq < t){
+  	fail = 1.0;
+  }
+  
+ if (t> tq+100){
+  if (fail == 1.0){
+  		if (v > -10){
+  	
+  		std::random_device sd;
+    	std::mt19937_64 gn(sd());
+    	std::uniform_real_distribution<double> distibution(0.0, 1.0);
+   		double sn = distibution(gn);
+   		
+   			fail = 0.0;
+   			//c = c +1;
+   		
+   			tq = t +35.0;}
+
+ }
+}
+
+	//ff = fail*I_Ext;
+    dxdt[v_index] = (I_Ext) - I_Na - I_K - I_Leak  -I_Syn -I_sahp- I_cav ;
+    insilico::engine::neuron_value(index, "tq", tq);
+    insilico::engine::neuron_value(index, "fail", fail);
+    //insilico::engine::neuron_value(index, "ff", ff);
      //insilico::engine::neuron_value(index, "ic", ic);
     // dxdt[v_index] = sin(3.14*t);
   } // function ode_set
